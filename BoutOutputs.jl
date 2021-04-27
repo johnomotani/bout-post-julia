@@ -79,7 +79,7 @@ function openboutdata(datadir::String="."; prefix::String="BOUT.dmp")
                * "ignoring extra files")
     end
 
-    nt = "t_array" in f ? f.dim["t"] : 1
+    nt = "t_array" ∈ f ? f.dim["t"] : 1
     nx = f["nx"].var[:]
     mxg = f["MXG"].var[:]
     myg = f["MYG"].var[:]
@@ -100,7 +100,7 @@ function openboutdata(datadir::String="."; prefix::String="BOUT.dmp")
               * "not divide ny_inner=$(ny_inner)")
     end
 
-    file_names = ("$(prefix).$(i-1).nc" for i in 2:npe)
+    file_names = ("$(prefix).$(i-1).nc" for i ∈ 2:npe)
     data_files = Array{NCDataset,1}(undef, npe)
     data_files[1] = f
     for (i, name) ∈ zip(2:nfiles, file_names)
@@ -146,7 +146,7 @@ function boutcollect(outputs::BoutFiles, varname::String;
         zind::IntOrRange=ibegin:iend,
         info::Bool=false)
 
-    if !(varname in outputs.data_files[1])
+    if !(varname ∈ outputs.data_files[1])
         error(varname * " is not present in dump files")
     end
 
@@ -206,9 +206,9 @@ function boutcollect(outputs::BoutFiles, varname::String;
     ndims = length(dimensions)
     var_attributes = f[varname].attrib
 
-    if !any(dim in dimensions for dim in ("x", "y", "z"))
+    if !any(dim ∈ dimensions for dim ∈ ("x", "y", "z"))
         # No spatial dependence, so just read from first file
-        if "t" in dimensions
+        if "t" ∈ dimensions
             if dimensions != ("t",)
                 error(varname * " has a 't' dimension, but it is not the only "
                       * "dimension in non-spatial dimensions="
@@ -259,10 +259,10 @@ function boutcollect(outputs::BoutFiles, varname::String;
 
     # Create a list with the size of each dimension
     sizes = Dict("t"=>tsize, "x"=>xsize, "y"=>ysize, "z"=>zsize)
-    result_dims = Tuple(sizes[d] for d in dimensions)
+    result_dims = Tuple(sizes[d] for d ∈ dimensions)
     ndims = length(result_dims)
 
-    if dimensions in (("z", "x", "t"), ("z", "x"))
+    if dimensions ∈ (("z", "x", "t"), ("z", "x"))
         is_fieldperp = true
         yindex_global = nothing
         # The pe_yind that this FieldPerp is going to be read from
@@ -366,7 +366,7 @@ function boutcollect(outputs::BoutFiles, varname::String;
         xstart, xstop, ystart, ystop, _ = getlocalxyinds(i)
         ranges = Dict("t" => tind, "x" => xstart:xstop, "y" => ystart:ystop,
                       "z" => zind)
-        return collect(ranges[d] for d in dimensions)
+        return collect(ranges[d] for d ∈ dimensions)
     end
 
     function getglobalxyinds(i)
@@ -393,7 +393,7 @@ function boutcollect(outputs::BoutFiles, varname::String;
         xgstart, xgstop, ygstart, ygstop = getglobalxyinds(i)
         ranges = Dict("t" => tind, "x" => xgstart:xgstop,
                       "y" => ygstart:ygstop, "z" => zind)
-        return collect(ranges[d] for d in dimensions)
+        return collect(ranges[d] for d ∈ dimensions)
     end
 
     function getdata(i, f)
@@ -462,7 +462,7 @@ function boutcollect(outputs::BoutFiles, varname::String;
 
     data = zeros(Float64, result_dims...)
 
-    for (j, f) in enumerate(data_files)
+    for (j, f) ∈ enumerate(data_files)
         # Processor indices are 0-based not 1-based
         i = j - 1
 
@@ -481,7 +481,7 @@ function boutcollect(outputs::BoutFiles, varname::String;
     if xind.step != 1 || yind.step != 1
         ranges = Dict("t" => ibegin:iend, "x" => ibegin:xind.step:iend,
                       "y" => ibegin:yind.step:iend, "z" => ibegin:iend)
-        data = data[(ranges[d] for d in dimensions)]
+        data = data[(ranges[d] for d ∈ dimensions)]
     end
 
     return BoutArray(data, var_attributes)
