@@ -12,6 +12,7 @@ export bout_collect
 
 using EndpointRanges
 using Glob
+using Lazy: @forward
 using NCDatasets: NCDataset, dimnames, Attributes
 
 """
@@ -39,6 +40,10 @@ struct BoutArray{N} <: AbstractArray{Float64, N}
   attributes::Attributes
 end
 
+# Define AbstractArray interface methods for BoutArray
+@forward BoutArray.data (Base.size, Base.getindex, Base.setindex!,
+                         Base.IndexStyle, Base.iterate, Base.length,
+                         Base.similar, Base.axes)
 
 IntOrRange = Union{Int, AbstractRange, EndpointRanges.EndpointRange}
 
@@ -365,7 +370,6 @@ function bout_collect(outputs::BoutOutputs, varname::String;
     xstart, xstop, ystart, ystop, inrange = get_local_xy_inds(i)
     xgstart, xgstop, ygstart, ygstop = get_global_xy_inds(i)
 
-    println("in get_data $i\n$xstart, $xstop, $ystart, $ystop, $inrange")
     if !inrange
       return nothing # Don't need this file
     end
@@ -423,7 +427,6 @@ function bout_collect(outputs::BoutOutputs, varname::String;
   data = zeros(Float64, result_dims...)
 
   for (j, f) in enumerate(data_files)
-    println("in loop ", j)
     # Processor indices are 0-based not 1-based
     i = j - 1
 
