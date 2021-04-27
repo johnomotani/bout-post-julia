@@ -34,6 +34,11 @@ struct BoutArray{T, N} <: AbstractArray{T, N}
     dimensions::Tuple
 end
 
+struct BoutScalar{T}
+    data::T
+    attributes::Attributes
+end
+
 # Define AbstractArray interface methods for BoutArray
 @forward BoutArray.data (Base.size, Base.getindex, Base.setindex!,
                          Base.IndexStyle, Base.iterate, Base.length,
@@ -171,7 +176,7 @@ function boutcollect(outputs::BoutFiles, varname::String;
 
         if dimensions == ()
             # scalar
-            ranges = ()
+            return BoutScalar(var.var[:], var.attrib)
         elseif dimensions == ("t")
             # time-dependent scalar
             ranges = (tind)
@@ -218,9 +223,8 @@ function boutcollect(outputs::BoutFiles, varname::String;
             return BoutArray(f[varname][tind], var_attributes, dimensions)
         else
             # No space or time dimensions, so no slicing
-            data = f[varname][:]
+            return BoutScalar(f[varname][:], var_attributes)
         end
-        return BoutArray(data, var_attributes, dimensions)
     end
 
     function converttonicerange(s, n)
