@@ -28,9 +28,10 @@ struct BoutFiles
     yproc_upper_target::Union{Nothing, Int}
 end
 
-struct BoutArray{N} <: AbstractArray{Float64, N}
-    data::Array{Float64, N}
+struct BoutArray{T, N} <: AbstractArray{T, N}
+    data::Array{T, N}
     attributes::Attributes
+    dimensions::Tuple
 end
 
 # Define AbstractArray interface methods for BoutArray
@@ -196,7 +197,7 @@ function boutcollect(outputs::BoutFiles, varname::String;
             ranges = nothing
         end
 
-        return BoutArray(var.var[ranges], var.attrib)
+        return BoutArray(var.var[ranges], var.attrib, dimensions)
     end
 
     data_files = outputs.data_files
@@ -214,12 +215,12 @@ function boutcollect(outputs::BoutFiles, varname::String;
                       * "dimension in non-spatial dimensions="
                       * string(dimensions))
             end
-            data = f[varname][ranges]
+            return BoutArray(f[varname][tind], var_attributes, dimensions)
         else
             # No space or time dimensions, so no slicing
             data = f[varname][:]
         end
-        return BoutArray(data, var_attributes)
+        return BoutArray(data, var_attributes, dimensions)
     end
 
     function converttonicerange(s, n)
@@ -484,7 +485,7 @@ function boutcollect(outputs::BoutFiles, varname::String;
         data = data[(ranges[d] for d ∈ dimensions)]
     end
 
-    return BoutArray(data, var_attributes)
+    return BoutArray(data, var_attributes, dimensions)
 end
 
 end
