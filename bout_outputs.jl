@@ -12,6 +12,7 @@ export bout_collect
 
 using EndpointRanges
 using Glob
+using Lazy: @forward
 using NCDatasets: NCDataset, dimnames, Attributes
 
 """
@@ -39,6 +40,10 @@ struct BoutArray{N} <: AbstractArray{Float64, N}
   attributes::Attributes
 end
 
+# Define AbstractArray interface methods for BoutArray
+@forward BoutArray.data (Base.size, Base.getindex, Base.setindex!,
+                         Base.IndexStyle, Base.iterate, Base.length,
+                         Base.similar, Base.axes)
 
 IntOrRange = Union{Int, AbstractRange, EndpointRanges.EndpointRange}
 
