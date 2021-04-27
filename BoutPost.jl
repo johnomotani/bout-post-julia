@@ -11,6 +11,9 @@ using BoutOutputs
 export openboutdata
 export boutcollect
 
+using SquashOutput
+export squashoutput
+
 using EndpointRanges
 export ibegin, iend
 
