@@ -47,6 +47,19 @@ end
 
 IntOrRange = Union{Int, AbstractRange, EndpointRanges.EndpointRange}
 
+"""
+    open_bout_data()
+
+Opens a set of NetCDF BOUT++ output files for reading
+
+Parameters
+----------
+datadir : String, default "."
+    The directory to open files from
+prefix : String, default "BOUT.dmp"
+    Prefix for file names. E.g. by default BOUT++ output files are named like
+    "BOUT.dmp.<i>.nc" where <i> is an integer.
+"""
 function open_bout_data(datadir::String=".", prefix::String="BOUT.dmp")
   f = NCDataset(joinpath(datadir, prefix * ".0.nc"))
 
@@ -105,6 +118,33 @@ function open_bout_data(datadir::String=".", prefix::String="BOUT.dmp")
                      ny_inner, nxpe, nype, mxsub, mysub, yproc_upper_target)
 end
 
+"""
+    bout_collect(outputs, "variable")
+
+Read a variable from output files opened with open_bout_data()
+
+When passing ranges to the `tind`, `xind`, `yind` or `zind` dimensions, it
+might be useful to import the EndpointRanges package, `using EndpointRanges`,
+which provides `ibegin` and `iend` which can be used to set start and stop
+values as the beginning and end of the array without requiring specific values.
+
+Parameters
+----------
+outputs : BoutOutputs
+    A BoutOutputs object returned by open_bout_data()
+varname : String
+    Name of the variable to read
+tind : Range, optional
+    Range of indices to select in the t-dimension, defaults to all indices
+xind : Range, optional
+    Range of indices to select in the x-dimension, defaults to all indices
+yind : Range, optional
+    Range of indices to select in the y-dimension, defaults to all indices
+zind : Range, optional
+    Range of indices to select in the z-dimension, defaults to all indices
+info : Bool, default false
+    If set to true, print extra information when reading data
+"""
 function bout_collect(outputs::BoutOutputs, varname::String;
                       tind::IntOrRange=ibegin:iend,
                       xind::IntOrRange=ibegin:iend,
