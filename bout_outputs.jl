@@ -10,10 +10,12 @@ module bout_outputs
 export open_bout_data
 export bout_collect
 
-using EndpointRanges
+using Distributed
+@everywhere using EndpointRanges
 using Glob
-using Lazy: @forward
-using NCDatasets: NCDataset, dimnames, Attributes
+@everywhere using Lazy: @forward
+@everywhere using NCDatasets: NCDataset, dimnames, Attributes
+@everywhere using SharedArrays
 
 """
 struct containing a set of BOUT++ dump files, opened as NCDataset objects
@@ -465,9 +467,9 @@ function bout_collect(outputs::BoutOutputs, varname::String;
     end
   end
 
-  data = zeros(Float64, result_dims...)
+  data = SharedArray{Float64}(result_dims...)
 
-  for (j, f) in enumerate(data_files)
+  @sync @distributed for (j, f) in collect(enumerate(data_files))
     println("in loop ", j)
     # Processor indices are 0-based not 1-based
     i = j - 1
